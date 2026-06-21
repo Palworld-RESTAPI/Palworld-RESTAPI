@@ -1,0 +1,96 @@
+from typing import Any, Self
+import httpx
+
+from ._core import build_url, handle_response
+from .models import ServerInfo, PlayersResponse, ServerSettings, ServerMetrics
+
+
+class AsyncPalworldClient:
+    def __init__(
+        self,
+        base_url: str,
+        password: str,
+        username: str = "admin",
+        timeout: float = 10.0,
+    ) -> None:
+        self.base_url = base_url
+        auth = (username, password)
+        self._client = httpx.AsyncClient(auth=auth, timeout=timeout)
+
+    async def __aenter__(self) -> Self:
+        await self._client.__aenter__()
+        return self
+
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        await self._client.__aexit__(exc_type, exc_val, exc_tb)
+
+    async def close(self) -> None:
+        await self._client.aclose()
+
+    async def get_info(self) -> ServerInfo:
+        url = build_url(self.base_url, "info")
+        response = await self._client.get(url)
+        data = handle_response(response)
+        return ServerInfo.from_dict(data)
+
+    async def get_players(self) -> PlayersResponse:
+        url = build_url(self.base_url, "players")
+        response = await self._client.get(url)
+        data = handle_response(response)
+        return PlayersResponse.from_dict(data)
+
+    async def get_settings(self) -> ServerSettings:
+        url = build_url(self.base_url, "settings")
+        response = await self._client.get(url)
+        data = handle_response(response)
+        return ServerSettings.from_dict(data)
+
+    async def get_metrics(self) -> ServerMetrics:
+        url = build_url(self.base_url, "metrics")
+        response = await self._client.get(url)
+        data = handle_response(response)
+        return ServerMetrics.from_dict(data)
+
+    async def announce(self, message: str) -> None:
+        url = build_url(self.base_url, "announce")
+        response = await self._client.post(url, json={"message": message})
+        handle_response(response)
+
+    async def kick_player(self, userid: str, message: str | None = None) -> None:
+        url = build_url(self.base_url, "kick")
+        payload = {"userid": userid}
+        if message is not None:
+            payload["message"] = message
+        response = await self._client.post(url, json=payload)
+        handle_response(response)
+
+    async def ban_player(self, userid: str, message: str | None = None) -> None:
+        url = build_url(self.base_url, "ban")
+        payload = {"userid": userid}
+        if message is not None:
+            payload["message"] = message
+        response = await self._client.post(url, json=payload)
+        handle_response(response)
+
+    async def unban_player(self, userid: str) -> None:
+        url = build_url(self.base_url, "unban")
+        response = await self._client.post(url, json={"userid": userid})
+        handle_response(response)
+
+    async def save(self) -> None:
+        url = build_url(self.base_url, "save")
+        response = await self._client.post(url)
+        handle_response(response)
+
+    async def shutdown(self, waittime: int, message: str | None = None) -> None:
+        url = build_url(self.base_url, "shutdown")
+        payload: dict[str, Any] = {"waittime": waittime}
+        if message is not None:
+            payload["message"] = message
+        response = await self._client.post(url, json=payload)
+        handle_response(response)
+
+    async def stop(self) -> None:
+        url = build_url(self.base_url, "stop")
+        response = await self._client.post(url)
+        handle_response(response)
