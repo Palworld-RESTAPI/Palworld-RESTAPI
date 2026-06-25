@@ -17,8 +17,8 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/KJAyano/Palworld-RESTAPI"
-Issues = "https://github.com/KJAyano/Palworld-RESTAPI/issues"
+Repository = "https://github.com/Palworld-RESTAPI/Palworld-RESTAPI"
+Issues = "https://github.com/Palworld-RESTAPI/Palworld-RESTAPI/issues"
 
 [project.scripts]
 palworld-cli = "palworld_restapi.cli:main"
